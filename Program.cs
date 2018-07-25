@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 
 namespace OctopusLoadRunner
 {
@@ -7,15 +8,22 @@ namespace OctopusLoadRunner
         
         static void Main(string[] args)
         {
-            LoadRunner runner =new LoadRunner();
-            runner.Start();
-            Console.CancelKeyPress += (sender, eventArgs) =>
-            {
-                Console.WriteLine("Cancel detected");
-                runner.Stop();
-            };
+            AsyncMain().Wait();
+        }
 
-            runner.WhenTerminated.Wait();
+        private static async Task AsyncMain()
+        {
+            using (var runner = new LoadRunner())
+            {
+                runner.Start();
+                Console.CancelKeyPress += (sender, eventArgs) =>
+                {
+                    Console.WriteLine("Cancel detected");
+                    runner.Stop();
+                    
+                };
+                await runner.WhenTerminated;
+            }
         }
     }
 }

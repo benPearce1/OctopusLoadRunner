@@ -6,14 +6,17 @@ using Akka.Bootstrap.Docker;
 using Akka.Configuration;
 using OctopusLoadRunner.Actors;
 using OctopusLoadRunner.Actors.Dashboard;
+using OctopusLoadRunner.Actors.Deployments;
 using OctopusLoadRunner.Messages;
 
 namespace OctopusLoadRunner
 {
-    public class LoadRunner
+    public class LoadRunner : IDisposable
     {
         private ActorSystem LoadSystem;
         IActorRef dashboardCoordinator;
+        private IActorRef projectCoordinator;
+        private IActorRef deploymentCoordinator;
 
         public bool Start()
         {
@@ -36,17 +39,33 @@ namespace OctopusLoadRunner
             LoadSystem = ActorSystem.Create("loadrunner");
             
             dashboardCoordinator = LoadSystem.ActorOf<DashboardRefreshCoordinator>();
-            dashboardCoordinator.Tell(new StartMessage(10, "http://localhost:8065", "API-FEL3J6OH4NQLYJTXRJCKGMBAS"));
+            var apikey = "API-FEL3J6OH4NQLYJTXRJCKGMBAS";
+            var url = "http://localhost:8065";
+            dashboardCoordinator.Tell(new StartMessage(10, url, apikey));
+
+            projectCoordinator = LoadSystem.ActorOf<ProjectCreateCoordinator>();
+            projectCoordinator.Tell(new StartMessage(1, url, apikey));
+
+            deploymentCoordinator = LoadSystem.ActorOf<DeploymentCoordinator>();
+            deploymentCoordinator.Tell(new StartMessage(10, url, apikey));
             return true;
         }
 
         public Task Stop()
         {
             dashboardCoordinator.Tell(new Stop());
-            dashboardCoordinator.Tell(PoisonPill.Instance);
+           
+            //LoadSystem.ActorSelection("/user/*").Tell(PoisonPill.Instance);
+            //return dashboardCoordinator.GracefulStop(TimeSpan.FromSeconds(2));
+            //dashboardCoordinator.Tell(PoisonPill.Instance);
             return CoordinatedShutdown.Get(LoadSystem).Run();
         }
 
         public Task WhenTerminated => LoadSystem.WhenTerminated;
+
+        public void Dispose()
+        {
+            LoadSystem?.Dispose();
+        }
     }
 }

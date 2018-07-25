@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Akka.Actor;
 
 namespace OctopusLoadRunner.Messages
 {
@@ -38,5 +39,53 @@ namespace OctopusLoadRunner.Messages
     public class Stop
     {
 
+    }
+
+    public class CreateNewProject : BaseApiMessage
+    {
+        public string Name { get; }
+        public string ProjectGroup { get; }
+        public IActorRef DeploymentProcessActor { get; }
+
+        public CreateNewProject(string name, string projectGroup, IActorRef deploymentProcessActor, string url, string apikey) : base(url,apikey)
+        {
+            Name = name;
+            ProjectGroup = projectGroup;
+            DeploymentProcessActor = deploymentProcessActor;
+        }
+    }
+
+    public class CreateDeploymentProcess : BaseApiMessage
+    {
+        public string ProjectId { get; }
+        public string DeploymentProcessId { get; }
+
+        public CreateDeploymentProcess(string projectId, string deploymentProcessId, string url, string apikey) : base(url, apikey)
+        {
+            ProjectId = projectId;
+            DeploymentProcessId = deploymentProcessId;
+        }
+    }
+
+    public class CreateRelease : BaseApiMessage
+    {
+        public string ProjectId { get; }
+        public string EnvironmentId { get; }
+
+        public CreateRelease(string projectId, string environmentId, string url, string apikey) : base(url, apikey)
+        {
+            ProjectId = projectId;
+            EnvironmentId = environmentId;
+        }
+    }
+
+    public class ProjectResult
+    {
+        public string ProjectId { get; }
+
+        public ProjectResult(string projectId)
+        {
+            ProjectId = projectId;
+        }
     }
 }

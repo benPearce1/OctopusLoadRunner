@@ -7,22 +7,18 @@ namespace OctopusLoadRunner.Actors.Dashboard
 {
     public class DashboardRefreshLoopActor : ReceiveActor
     {
-        private bool running;
-        private string id;
+        private IActorRef dashboardActor;
+
 
         public DashboardRefreshLoopActor()
         {
             Receive<StartDashboard>(msg =>
             {
-                id = Guid.NewGuid().ToString();
-                running = true;
-                while (running)
-                {
-                    Thread.Sleep(msg.RefreshTime);
-                    var actor = Context.ActorOf<DashboardActor>();
-                    Console.WriteLine($"{DateTime.Now.ToLongTimeString()} {id} receiving dashboard");
-                    actor.Tell(new BaseApiMessage(msg.Url, msg.ApiKey));
-                }
+                //id = Guid.NewGuid().ToString();
+                dashboardActor = Context.ActorOf<DashboardActor>();
+
+                Context.System.Scheduler.ScheduleTellRepeatedly(TimeSpan.Zero, msg.RefreshTime, dashboardActor,
+                    new BaseApiMessage(msg.Url, msg.ApiKey), Context.Self);
             });
 
             Receive<Stop>(msg =>

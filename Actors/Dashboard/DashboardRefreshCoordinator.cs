@@ -23,14 +23,14 @@ namespace OctopusLoadRunner.Actors.Dashboard
                 }
             });
 
-            Receive<Stop>(msg =>
-            {
-                Console.WriteLine($"Stopping {actors.Count} dashboard actors");
-                foreach (var actorRef in actors)
-                {
-                    Context.Stop(actorRef);
-                }
-            });
+            //Receive<Stop>(msg =>
+            //{
+            //    Console.WriteLine($"Stopping {actors.Count} dashboard actors");
+            //    foreach (var actorRef in actors)
+            //    {
+            //        Context.Stop(actorRef);
+            //    }
+            //});
         }
     }
 }

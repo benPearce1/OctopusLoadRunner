@@ -1,4 +1,6 @@
-﻿using Akka.Actor;
+﻿using System;
+using System.Diagnostics;
+using Akka.Actor;
 using Octopus.Client;
 using OctopusLoadRunner.Messages;
 
@@ -13,7 +15,10 @@ namespace OctopusLoadRunner.Actors.Dashboard
                 var endpoint = new OctopusServerEndpoint(msg.Url, msg.ApiKey);
                 using (var client = await OctopusAsyncClient.Create(endpoint))
                 {
-                    await client.Repository.Dashboards.GetDashboard();
+                    Stopwatch sw = Stopwatch.StartNew();
+                    var dashboard = await client.Repository.Dashboards.GetDashboard();
+                    sw.Stop();
+                    Console.WriteLine($"Dashboard with {dashboard.Items.Count} items, {dashboard.Projects.Count} projects, received in {sw.ElapsedMilliseconds} ms");
                 }
             });
         }
